@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Entries</title>
+</head>
+<body>
+    <h1>All Entries</h1>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Product</th>
+            <th>Paid By</th>
+            <th>Amount</th>
+            <th>GST</th>
+        </tr>
+        {% for entry in entries %}
+        <tr>
+            <td>{{ entry[0] }}</td>
+            <td>{{ entry[1] }}</td>
+            <td>{{ entry[2] }}</td>
+            <td>{{ entry[3] }}</td>
+            <td>{{ entry[4] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <a href="/"><button>Back to Home</button></a>
+</body>
+</html>

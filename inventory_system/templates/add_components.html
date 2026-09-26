@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Add Components - BotBruz Inventory{% endblock %}
+
+{% block extra_css %}
+<style>
+.add-card { max-width: 900px; margin: 0 auto; }
+.method-btn-group .btn { min-width: 110px; white-space: nowrap; }
+.form-actions { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
+.btn-compact { padding: 6px 10px; font-size: 0.9rem; }
+#invoice_text_area { min-height: 160px; }
+.gst-input { display: none; margin-top: 8px; }
+@media (max-width: 576px) {
+  .method-btn-group .btn { min-width: 90px; font-size: .9rem; }
+  .form-actions { flex-direction: column; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 add-card">
+  <div class="card shadow-sm p-3">
+    <div class="card-body">
+      <h3 class="card-title text-center mb-3">Component Entry</h3>
+
+      <!-- Method selection -->
+      <div class="d-flex justify-content-center mb-3">
+        <div class="btn-group method-btn-group" role="group">
+          <input type="radio" class="btn-check" name="entry-method" id="manual-method" autocomplete="off" checked>
+          <label class="btn btn-outline-primary btn-compact" for="manual-method">Manual</label>
+
+          <input type="radio" class="btn-check" name="entry-method" id="invoice-method" autocomplete="off">
+          <label class="btn btn-outline-primary btn-compact" for="invoice-method">Invoice</label>
+        </div>
+      </div>
+
+      <!-- Manual Form -->
+      <div id="manual-form" class="entry-form">
+        <form method="POST" action="{{ url_for('add_components') }}" enctype="multipart/form-data">
+          <input type="hidden" name="method" value="manual">
+
+          <div class="mb-2">
+            <label for="name" class="form-label">Component Name</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="e.g., Resistor 10K Ohm" required>
+          </div>
+
+          <div class="row">
+            <div class="col-sm-6 mb-2">
+              <label for="quantity" class="form-label">Quantity</label>
+              <input type="number" class="form-control" id="quantity" name="quantity" min="1" required>
+            </div>
+            <div class="col-sm-6 mb-2">
+              <label for="unit_price" class="form-label">Unit Price</label>
+              <input type="number" step="0.01" class="form-control" id="unit_price" name="unit_price" min="0.00" required>
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <label for="sku" class="form-label">SKU</label>
+            <input type="text" class="form-control" id="sku" name="sku" placeholder="Enter SKU">
+          </div>
+
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" value="1" id="gst_applicable" name="gst_applicable">
+            <label class="form-check-label" for="gst_applicable">GST Applicable</label>
+          </div>
+          <div class="mb-2 gst-input" id="gst_percent_container">
+            <label for="gst_percent" class="form-label">Enter GST %</label>
+            <input type="number" step="0.01" min="0" class="form-control" id="gst_percent" name="gst_percent" placeholder="e.g., 18">
+          </div>
+
+          <div class="mb-2">
+            <label for="ordered_by" class="form-label">Ordered By</label>
+            <input type="text" class="form-control" id="ordered_by" name="ordered_by" placeholder="Person / Department">
+          </div>
+
+          <div class="mb-3">
+            <label for="category" class="form-label">Category</label>
+            <select class="form-select" id="category" name="category" required>
+              <option value="Electronics" selected>Electronics</option>
+              <option value="Hardware">Hardware</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="invoice" class="form-label">Upload Invoice</label>
+            <input type="file" name="invoice_file" class="form-control" accept=".pdf,.jpg,.png,.jpeg">
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-success btn-compact">Add Component</button>
+            <a href="{{ url_for('inventory') }}" class="btn btn-secondary btn-compact">View Inventory</a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-compact">Dashboard</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- Invoice Form -->
+      <div id="invoice-form" class="entry-form" style="display:none;">
+        <form method="POST" action="{{ url_for('add_components') }}" enctype="multipart/form-data">
+          <input type="hidden" name="method" value="invoice">
+
+          <div class="mb-2">
+            <label for="invoice_text_area" class="form-label">Invoice Text (paste)</label>
+            <textarea id="invoice_text_area" class="form-control" name="items_json" placeholder="Paste invoice lines here..." required></textarea>
+          </div>
+
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" value="1" id="gst_applicable_invoice" name="gst_applicable">
+            <label class="form-check-label" for="gst_applicable_invoice">GST Applicable</label>
+          </div>
+          <div class="mb-2 gst-input" id="gst_percent_invoice_container">
+            <label for="gst_percent_invoice" class="form-label">Enter GST %</label>
+            <input type="number" step="0.01" min="0" class="form-control" id="gst_percent_invoice" name="gst_percent" placeholder="e.g., 18">
+          </div>
+
+          <div class="mb-2">
+            <label for="ordered_by_invoice" class="form-label">Ordered By</label>
+            <input type="text" class="form-control" id="ordered_by_invoice" name="ordered_by" placeholder="Person / Department">
+          </div>
+
+          <div class="mb-3">
+            <label for="category_invoice" class="form-label">Category</label>
+            <select class="form-select" id="category_invoice" name="category" required>
+              <option value="Electronics" selected>Electronics</option>
+              <option value="Hardware">Hardware</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="sku_invoice" class="form-label">SKU</label>
+            <input type="text" class="form-control" id="sku_invoice" name="sku" placeholder="Enter SKU">
+          </div>
+
+          <div class="mb-3">
+            <label for="invoice_file_invoice" class="form-label">Upload Invoice</label>
+            <input type="file" name="invoice" class="form-control" accept=".pdf,.jpg,.png,.jpeg">
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-success btn-compact">Add Components</button>
+            <a href="{{ url_for('inventory') }}" class="btn btn-secondary btn-compact">View Inventory</a>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const manualRadio = document.getElementById('manual-method');
+  const invoiceRadio = document.getElementById('invoice-method');
+  const manualForm = document.getElementById('manual-form');
+  const invoiceForm = document.getElementById('invoice-form');
+
+  function showManual() { manualForm.style.display = 'block'; invoiceForm.style.display = 'none'; }
+  function showInvoice() { manualForm.style.display = 'none'; invoiceForm.style.display = 'block'; }
+
+  manualRadio.addEventListener('change', () => { if (manualRadio.checked) showManual(); });
+  invoiceRadio.addEventListener('change', () => { if (invoiceRadio.checked) showInvoice(); });
+
+  // GST toggling for manual
+  const gstCheckbox = document.getElementById('gst_applicable');
+  const gstContainer = document.getElementById('gst_percent_container');
+  gstCheckbox.addEventListener('change', function() {
+    gstContainer.style.display = gstCheckbox.checked ? 'block' : 'none';
+    if (!gstCheckbox.checked) document.getElementById('gst_percent').value = '';
+  });
+
+  // GST toggling for invoice
+  const gstCheckboxInvoice = document.getElementById('gst_applicable_invoice');
+  const gstContainerInvoice = document.getElementById('gst_percent_invoice_container');
+  gstCheckboxInvoice.addEventListener('change', function() {
+    gstContainerInvoice.style.display = gstCheckboxInvoice.checked ? 'block' : 'none';
+    if (!gstCheckboxInvoice.checked) document.getElementById('gst_percent_invoice').value = '';
+  });
+});
+</script>
+{% endblock %}

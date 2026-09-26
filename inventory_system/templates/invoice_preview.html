@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Invoice Preview</h2>
+<form method="post" action="{{ url_for('add_components') }}">
+    <input type="hidden" name="method" value="invoice">
+    <input type="hidden" name="action" value="save">
+    <input type="hidden" name="invoice_text" value="{{ invoice_text }}">
+    <input type="hidden" name="ordered_by" value="{{ ordered_by }}">
+    <input type="hidden" name="gst_applicable_invoice" value="{{ gst_applicable }}">
+
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>Name</th>
+            <th>SKU</th>
+            <th>Qty</th>
+            <th>Price</th>
+            <th>GST</th>
+        </tr>
+        {% for item in items %}
+        <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.sku }}</td>
+            <td>{{ item.qty }}</td>
+            <td>{{ item.price }}</td>
+            <td>{{ item.gst_value }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <button type="submit">✅ Confirm & Save</button>
+    <a href="{{ url_for('add_components') }}">❌ Cancel</a>
+</form>
+{% endblock %}

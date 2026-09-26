@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Django
+*.sqlite3
+db.sqlite3
+
+# Environment / secrets
+.env
+.env.*
+
+# VS Code
+.vscode/
+
+# Windows
+desktop.ini
+
+# Generated files
+uploads/
+exports/
+tempCodeRunnerFile.py
+static/invoices/

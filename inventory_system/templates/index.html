@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BotBruz Inventory Management - Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --dark-color: #1e293b;
+            --light-bg: #f8fafc;
+        }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color) !important;
+            font-size: 1.5rem;
+        }
+        .main-container {
+            margin-top: 2rem;
+        }
+        .hero-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .hero-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+        .stats-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        .stats-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin-bottom: 1rem;
+        }
+        .icon-primary { background: linear-gradient(45deg, #2563eb, #3b82f6); }
+        .icon-success { background: linear-gradient(45deg, #059669, #10b981); }
+        .icon-warning { background: linear-gradient(45deg, #d97706, #f59e0b); }
+        .icon-info { background: linear-gradient(45deg, #7c3aed, #8b5cf6); }
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+        .stats-label {
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+        .quick-actions {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .quick-action-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: var(--dark-color);
+            margin-bottom: 1rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        .quick-action-item:hover {
+            background: var(--light-bg);
+            transform: translateX(5px);
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        .quick-action-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            color: white;
+        }
+        /* Add Components Boxes */
+        .box-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .box {
+            flex: 1 1 200px;
+            min-height: 120px;
+            background: #f2f2f2;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            text-decoration: none;
+            color: black;
+        }
+        .box:hover {
+            transform: scale(1.05);
+            background: #e6e6e6;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-robot me-2"></i>BotBruz Inventory
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="{{ url_for('dashboard') }}"><i class="fas fa-home me-1"></i>Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('add_components') }}"><i class="fas fa-plus me-1"></i>Add Components</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('inventory') }}"><i class="fas fa-list me-1"></i>View Inventory</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container main-container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <h1 class="hero-title"><i class="fas fa-warehouse me-3"></i>Welcome to BotBruz Inventory</h1>
+            <p class="hero-subtitle">Manage your electronic components with precision and efficiency</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="stats-card">
+                    <div class="stats-icon icon-primary"><i class="fas fa-microchip"></i></div>
+                    <div class="stats-number" id="totalComponents">0</div>
+                    <div class="stats-label">Total Components</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stats-card">
+                    <div class="stats-icon icon-success"><i class="fas fa-dollar-sign"></i></div>
+                    <div class="stats-number" id="totalValue">₹0</div>
+                    <div class="stats-label">Total Inventory Value</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stats-card">
+                    <div class="stats-icon icon-warning"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="stats-number" id="lowStock">0</div>
+                    <div class="stats-label">Low Stock Items</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stats-card">
+                    <div class="stats-icon icon-info"><i class="fas fa-calendar-alt"></i></div>
+                    <div class="stats-number" id="recentAdded">0</div>
+                    <div class="stats-label">Added This Week</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h3 class="mb-4"><i class="fas fa-bolt me-2 text-primary"></i>Quick Actions</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="p-3">
+                        <h5 class="mb-3">Add Components</h5>
+                        <div class="box-container">
+                            <a href="{{ url_for('add_components') }}" class="box"><h4>Manual Entry</h4></a>
+                            <a href="{{ url_for('parse_invoice') }}" class="box"><h4>Parse Invoice</h4></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <a href="{{ url_for('inventory') }}" class="quick-action-item">
+                        <div class="quick-action-icon icon-success"><i class="fas fa-search"></i></div>
+                        <div>
+                            <h5 class="mb-1">View Inventory</h5>
+                            <p class="mb-0 text-muted">Browse, search, and manage your components</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <a href="{{ url_for('api_entries') }}" class="quick-action-item">
+                        <div class="quick-action-icon icon-warning"><i class="fas fa-download"></i></div>
+                        <div>
+                            <h5 class="mb-1">Export Data</h5>
+                            <p class="mb-0 text-muted">Download inventory data in JSON format</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <a href="#" onclick="refreshStats()" class="quick-action-item">
+                        <div class="quick-action-icon icon-info"><i class="fas fa-sync"></i></div>
+                        <div>
+                            <h5 class="mb-1">Refresh Stats</h5>
+                            <p class="mb-0 text-muted">Update dashboard statistics</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', loadStats);
+        async function loadStats() {
+            try {
+                const response = await fetch('{{ url_for("api_entries") }}');
+                const data = await response.json();
+                document.getElementById('totalComponents').textContent = data.length;
+                const totalValue = data.reduce((sum, item) => sum + (item.amount || 0) + (item.gst || 0), 0);
+                document.getElementById('totalValue').textContent = `₹${totalValue.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+                document.getElementById('lowStock').textContent = data.filter(item => (item.quantity || 0) < 10).length;
+                const oneWeekAgo = new Date(); oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+                document.getElementById('recentAdded').textContent = data.filter(item => item.date_added && new Date(item.date_added) >= oneWeekAgo).length;
+            } catch (error) { console.error('Error loading stats:', error); }
+        }
+        function refreshStats() {
+            const refreshIcon = event.target.closest('.quick-action-item').querySelector('i');
+            refreshIcon.classList.add('fa-spin');
+            loadStats();
+            setTimeout(() => refreshIcon.classList.remove('fa-spin'), 1000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - BotBruz Inventory{% endblock %}
+
+{% block content %}
+<div class="col-md-10 mx-auto bg-light p-4 mt-4 shadow text-center">
+    <h1><i class="bi bi-speedometer2"></i> Dashboard</h1>
+    
+    <!-- Statistics Cards -->
+    <div class="row mt-4 mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 id="total-entries">{{ stats.total_entries if stats else 0 }}</h4>
+                            <p class="mb-0">Total Entries</p>
+                        </div>
+                        <div class="fs-1 opacity-75">
+                            <i class="bi bi-boxes"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 id="total-amount">₹{{ "%.2f"|format(stats.total_amount if stats else 0) }}</h4>
+                            <p class="mb-0">Total Amount</p>
+                        </div>
+                        <div class="fs-1 opacity-75">
+                            <i class="bi bi-currency-rupee"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 id="total-gst">₹{{ "%.2f"|format(stats.total_gst if stats else 0) }}</h4>
+                            <p class="mb-0">Total GST</p>
+                        </div>
+                        <div class="fs-1 opacity-75">
+                            <i class="bi bi-receipt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-plus-circle text-success"></i> Add Entry
+                    </h5>
+                    <p class="card-text">Add new entries manually or by parsing invoices</p>
+                    <a href="{{ url_for('add_components') }}" class="btn btn-success">
+                        <i class="bi bi-plus-circle"></i> Add Entry
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-list-ul text-primary"></i> View Entries
+                    </h5>
+                    <p class="card-text">Browse, search, and manage your entries</p>
+                    <a href="{{ url_for('inventory') }}" class="btn btn-primary">
+                        <i class="bi bi-list-ul"></i> View Entries
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Entries -->
+{% if stats and stats.recent_entries and stats.recent_entries|length > 0 %}
+<div class="mt-4">
+    <h4><i class="bi bi-clock-history"></i> Recent Entries</h4>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Paid By</th>
+                    <th>Unit Price</th>
+                    <th>Quantity</th>
+                    <th>GST (%)</th>
+                    <th>GST (₹)</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in stats.recent_entries %}
+                <tr>
+                    <td>{{ entry['name'] }}</td>
+                    <td>{{ entry['ordered_by'] }}</td>
+                    <td>₹{{ "%.2f"|format(entry['unit_price']) }}</td>
+                    <td>{{ entry['quantity'] }}</td>
+                    <td>{{ entry['gst_percent'] }}%</td>
+                    <td>₹{{ "%.2f"|format(entry['gst_value']) }}</td>
+                    <td>₹{{ "%.2f"|format(entry.total) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="mt-4">
+    <h4><i class="bi bi-clock-history"></i> Recent Entries</h4>
+    <div class="alert alert-info">
+        <p class="mb-0">No recent entries found. <a href="{{ url_for('add_components') }}">Add your first component!</a></p>
+    </div>
+</div>
+{% endif %}
+
+    
+    <!-- Quick Tips -->
+    <div class="mt-4">
+        <div class="alert alert-info">
+            <h5 class="alert-heading"><i class="bi bi-lightbulb"></i> Quick Tips</h5>
+            <ul class="mb-0 text-start">
+                <li>Use the invoice parser to quickly add multiple entries</li>
+                <li>Search functionality helps find specific products or payment methods</li>
+                <li>Click column headers in the view page to sort data</li>
+                <li>Edit or delete entries directly from the view page</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function updateStats() {
+        fetch('/api/entries')
+            .then(response => response.json())
+            .then(data => {
+                const totalEntries = data.length;
+                const totalAmount = data.reduce((sum, item) => sum + ((parseFloat(item.unit_price) || 0) * (parseInt(item.quantity) || 1)), 0);
+                const totalGst = data.reduce((sum, item) => sum + (parseFloat(item.gst_value) || 0), 0);
+                
+                document.getElementById('total-entries').textContent = totalEntries;
+                document.getElementById('total-amount').textContent = '₹' + totalAmount.toFixed(2);
+                document.getElementById('total-gst').textContent = '₹' + totalGst.toFixed(2);
+            })
+            .catch(error => {
+                console.error('Error updating stats:', error);
+            });
+    }
+    
+    setInterval(updateStats, 30000);
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            updateStats();
+        }
+    });
+    document.addEventListener('DOMContentLoaded', updateStats);
+</script>
+{% endblock %}

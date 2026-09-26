@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BotBruz Inventory Management{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --dark-color: #1e293b;
+            --light-bg: #f8fafc;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color) !important;
+            font-size: 1.5rem;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+            transform: translateY(-1px);
+        }
+
+        .nav-link.active {
+            color: var(--primary-color) !important;
+            font-weight: 600;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .alert {
+            border: none;
+            border-radius: 10px;
+            border-left: 4px solid;
+        }
+
+        .alert-success { border-left-color: var(--success-color); }
+        .alert-danger { border-left-color: var(--danger-color); }
+        .alert-warning { border-left-color: var(--warning-color); }
+        .alert-info { border-left-color: var(--primary-color); }
+
+        .bg-light {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-radius: 15px !important;
+        }
+
+        .shadow {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table thead th {
+            background: var(--light-bg);
+            border: none;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85rem;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+        }
+
+        @media (max-width: 768px) {
+            .col-md-8, .col-md-10 {
+                padding: 0 15px;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <i class="bi bi-robot me-2"></i>BotBruz Inventory
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'dashboard' }}" href="{{ url_for('dashboard') }}">
+                            <i class="bi bi-house me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'add_components' }}" href="{{ url_for('add_components') }}">
+                            <i class="bi bi-plus-circle me-1"></i>Add Components
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'inventory' }}" href="{{ url_for('inventory') }}">
+                            <i class="bi bi-list-ul me-1"></i>View Inventory
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main style="margin-top: 80px; padding-bottom: 2rem;">
+        <div class="container-fluid">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    <i class="bi bi-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' if category == 'success' else 'info-circle' }} me-2"></i>
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <!-- Page Content -->
+            <div class="row justify-content-center">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

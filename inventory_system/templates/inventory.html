@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Inventory - BotBruz Inventory{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <!-- Header + Search + GST Filter -->
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <h2>Inventory</h2>
+    </div>
+    <div class="col-md-6 text-end">
+      <form method="GET" action="{{ url_for('inventory') }}" class="d-inline-block">
+        <div class="d-flex align-items-center gap-2">
+          <input type="text" class="form-control" name="search" placeholder="Search components..." value="{{ search }}">
+          <select class="form-select" name="gst_filter">
+            <option value="all" {% if gst_filter == 'all' %}selected{% endif %}>All</option>
+            <option value="with" {% if gst_filter == 'with' %}selected{% endif %}>With GST</option>
+            <option value="without" {% if gst_filter == 'without' %}selected{% endif %}>Without GST</option>
+          </select>
+          <button class="btn btn-primary" type="submit">Filter</button>
+        </div>
+      </form>
+
+      <!-- Delete All Button -->
+      <button type="button" class="btn btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#deleteAllModal">
+        Delete All
+      </button>
+
+      <!-- Delete All Modal -->
+      <div class="modal fade" id="deleteAllModal" tabindex="-1" aria-labelledby="deleteAllModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <form method="POST" action="{{ url_for('delete_all_components') }}">
+              <div class="modal-header">
+                <h5 class="modal-title" id="deleteAllModalLabel">Confirm Delete All</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <p>⚠️ This will delete <strong>ALL components</strong> from the inventory. This action cannot be undone.</p>
+                <div class="mb-3">
+                  <label for="pin" class="form-label">Enter PIN to confirm:</label>
+                  <input type="password" class="form-control" name="pin" id="pin" placeholder="Enter PIN" required>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-danger">Delete All</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Sorting & Category Buttons -->
+  <div class="mb-3">
+    <a href="{{ url_for('inventory', sort='date_added', order='desc', gst_filter=gst_filter, search=search) }}"
+       class="btn btn-sm {% if sort_by=='date_added' and order=='desc' %}btn-primary{% else %}btn-outline-primary{% endif %}">Latest</a>
+    <a href="{{ url_for('inventory', sort='name', order='asc', gst_filter=gst_filter, search=search) }}"
+       class="btn btn-sm {% if sort_by=='name' and order=='asc' %}btn-light{% else %}btn-outline-light{% endif %}">Ascending</a>
+    <a href="{{ url_for('inventory', sort='name', order='desc', gst_filter=gst_filter, search=search) }}"
+       class="btn btn-sm {% if sort_by=='name' and order=='desc' %}btn-light{% else %}btn-outline-light{% endif %}">Descending</a>
+    <a href="{{ url_for('inventory', gst_filter=gst_filter, category='Electronics', search=search) }}"
+       class="btn btn-sm {% if category_filter=='Electronics' %}btn-light{% else %}btn-outline-light{% endif %}">Electronics</a>
+    <a href="{{ url_for('inventory', gst_filter=gst_filter, category='Hardware', search=search) }}"
+       class="btn btn-sm {% if category_filter=='Hardware' %}btn-light{% else %}btn-outline-light{% endif %}">Hardware</a>
+  </div>
+
+  <!-- Inventory Table -->
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered text-center align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>ID</th>
+          <th>SKU</th>
+          <th>Name</th>
+          <th>Quantity</th>
+          <th>Unit Price</th>
+          <th>GST Status</th>
+          <th>GST Value</th>
+          <th>Total Value</th>
+          <th>Ordered By</th>
+          <th>Date Added</th>
+          <th>Actions</th>
+          <th>Invoice</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set displayed = false %}
+        {% for component in components %}
+          {% if gst_filter == 'all' 
+                or (gst_filter == 'with' and component.gst_applicable) 
+                or (gst_filter == 'without' and not component.gst_applicable) %}
+            {% set displayed = true %}
+            <tr>
+              <td>{{ component.id }}</td>
+              <td>{{ component.sku }}</td>
+              <td class="text-start">{{ component.name }}</td>
+              <td>{{ component.quantity }}</td>
+              <td>₹{{ "%.2f"|format(component.unit_price) }}</td>
+              <td>
+                {% if component.gst_applicable %}
+                  <span class="badge bg-success">With GST</span>
+                {% else %}
+                  <span class="badge bg-secondary">Without GST</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if component.gst_applicable %}
+                  {{ component.gst_percent }}% (₹{{ "%.2f"|format(component.gst_value) }})
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td>₹{{ "%.2f"|format(component.total_value) }}</td>
+              <td>{{ component.ordered_by or '-' }}</td>
+              <td>{{ component.date_added }}</td>
+              <td>
+                <a href="{{ url_for('edit_component', component_id=component.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                <a href="{{ url_for('delete_component', component_id=component.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?');">Delete</a>
+              </td>
+              <td>
+                {% if component.invoice_file %}
+                  <a href="{{ url_for('view_invoice', filename=component.invoice_file) }}" target="_blank" class="btn btn-sm btn-info">
+                    View Invoice <i class="bi bi-file-earmark-pdf"></i>
+                  </a>
+                {% else %}
+                  <span class="text-muted">No Invoice</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endif %}
+        {% endfor %}
+
+        {% if not displayed %}
+          <tr>
+            <td colspan="12"><em>No components found.</em></td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Total Value & Export Buttons -->
+  <div class="mb-3 text-end">
+    <button class="btn btn-success">
+      Total Value: ₹{{ "%.2f"|format(total_value) }}
+    </button>
+  </div>
+  <div class="mb-3">
+    <a href="{{ url_for('export_file', file_type='with_gst') }}" class="btn btn-success btn-sm">Download With GST (Excel)</a>
+    <a href="{{ url_for('export_file', file_type='without_gst') }}" class="btn btn-primary btn-sm">Download Without GST (CSV)</a>
+    <a href="{{ url_for('export_file', file_type='all') }}" class="btn btn-secondary btn-sm">Download All (CSV)</a>
+    <a href="{{ url_for('export_file', file_type='electronics') }}" class="btn btn-secondary btn-sm">Download Electronics (CSV)</a>
+    <a href="{{ url_for('export_file', file_type='hardware') }}" class="btn btn-secondary btn-sm">Download Hardware (CSV)</a>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}{% endblock %}
